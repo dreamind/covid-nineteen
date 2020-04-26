@@ -13,7 +13,7 @@
       :row="row"
       :value="row.confirmed"
       :dValue="row.dConfirmed"
-      :d2Value="row.__mean__.d2Confirmed"
+      :d2Value="row.means.d2Confirmed"
       :maxValue="rowStats['confirmed'].max"
       :maxDValue="rowStats['dConfirmed'].max"
       :minValue="rowStats['confirmed'].min"
@@ -28,7 +28,7 @@
       :row="row"
       :value="row.deceased"
       :dValue="row.dDeceased"
-      :d2Value="row.__mean__.d2Deceased"
+      :d2Value="row.means.d2Deceased"
       :maxValue="rowStats['deceased'].max"
       :maxDValue="rowStats['dDeceased'].max"
       :minValue="rowStats['deceased'].min"
@@ -43,7 +43,7 @@
       :row="row"
       :value="row.recovered"
       :dValue="row.dRecovered"
-      :d2Value="row.__mean__.d2Recovered"
+      :d2Value="row.means.d2Recovered"
       :maxValue="rowStats['recovered'].max"
       :maxDValue="rowStats['dRecovered'].max"
       :minValue="rowStats['recovered'].min"
@@ -58,7 +58,7 @@
       :row="row"
       :value="row.active"
       :dValue="row.dActive"
-      :d2Value="row.__mean__.d2Active"
+      :d2Value="row.means.d2Active"
       :maxValue="rowStats['active'].max"
       :maxDValue="rowStats['dActive'].max"
       :minValue="rowStats['active'].min"
@@ -71,51 +71,51 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex';
 
-import Cell from "./Cell.vue";
-import { mixin as columnMixin } from "../mixins/columns";
+import Cell from './Cell.vue';
+import { mixin as columnMixin } from '../mixins/columns';
 
 export default {
-  name: "Row",
+  name: 'Row',
   props: {
     selected: Boolean,
     log: Boolean,
     row: Object,
     mean: Object,
-    mode: Number
+    mode: Number,
   },
   mixins: [columnMixin],
   components: {
-    Cell
+    Cell,
   },
   computed: {
-    selectedCls () {
-      let { selected } = this.row;
+    selectedCls() {
+      const { selected } = this.row;
       return {
-        selected
-      }
+        selected,
+      };
     },
-    ...mapGetters(["rowStats"])
+    ...mapGetters(['rowStats']),
   },
   data() {
     return {
       barWidth: 80,
       dWidth: 40,
-      checked: false
+      checked: false,
     };
   },
   watch: {
     checked() {
-      this.$emit("select", this.row.country, this.checked);
-    }
+      this.$emit('select', this.row.country, this.checked);
+    },
   },
   mounted() {},
   methods: {
     toggleCountry() {
-      this.$emit("toggleCountry", this.row.country);
-    }
-  }
+      this.$emit('toggleCountry', this.row.country);
+    },
+  },
 };
 </script>
 

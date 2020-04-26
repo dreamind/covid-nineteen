@@ -2,7 +2,11 @@
   <div id="app">
     <div id="logo"></div>
     <div class="app-header">
-      <div :style="columnWidthStyle(index)" :key="index" v-for="(column, index) in columns">
+      <div
+        :style="columnWidthStyle(index)"
+        :key="'col-' + index"
+        v-for="(column, index) in columns"
+      >
         <div v-if="index === 0" class="mode-select">
           <span
             class="symbol"
@@ -72,8 +76,8 @@
         <span
           class="country"
           :key="country"
-          :style="{ 'background-color': palette[idx] }"
-          v-for="(country, idx) in currentCountries"
+          :style="{ 'background-color': palette[index % palette.length] }"
+          v-for="(country, index) in currentCountries"
         >
           {{ country }}
         </span>
@@ -83,7 +87,6 @@
       <Grid
         id="grid"
         :mode="snapshotMode"
-        @change="gridChange"
         @resetCountries="resetCountries"
         @toggleCountry="toggleCountry"
       />
@@ -108,7 +111,7 @@
             :focusDateIdx="focusDateIdx"
             :initialChartWidth="initialChartWidth"
             @selectDate="selectDate"
-          />          
+          />
           <Chart
             title="Daily Deceased"
             :selectedMeasures="['dDeceased']"
@@ -146,19 +149,14 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import Grid from "./components/Grid.vue";
-import Chart from "./components/Chart.vue";
-import { assign, each, without, union } from "lodash";
-import moment from "moment";
-import { mixin as columnMixin } from "./mixins/columns";
-import { dates } from "../public/data/summary.json";
+/* eslint-disable no-restricted-globals */
+import { mapGetters } from 'vuex';
+import { each } from 'lodash';
+import moment from 'moment';
+import Grid from './components/Grid.vue';
+import Chart from './components/Chart.vue';
+import { mixin as columnMixin } from './mixins/columns';
 import {
-  dateMap,
-  fields,
-  measures,
-  modeHeadingMap,
-  sorterMap,
   columns,
   nFormat,
   dFormat,
@@ -168,15 +166,15 @@ import {
   SNAPSHOT_CHANGE,
   TIMESERIES_COMBINED,
   TIMESERIES_COMPARED,
-  TIMESERIES_BOTH
-} from "./libs/common";
+  TIMESERIES_BOTH,
+} from './libs/common';
 
 export default {
-  name: "App",
+  name: 'App',
   mixins: [columnMixin],
   components: {
     Grid,
-    Chart
+    Chart,
   },
   data() {
     return {
@@ -187,14 +185,15 @@ export default {
       TIMESERIES_COMBINED,
       TIMESERIES_COMPARED,
       TIMESERIES_BOTH,
-      humanDate: "",
-      distDate: "",
+      humanDate: '',
+      distDate: '',
       columns,
       chartWidth: 700,
       snapshotMode: 0,
       timeseriesMode: 0,
       selectedCountries: [],
       initialChartWidth: 0,
+      initialChartHeight: 0,
       colWidths: [],
       focusDateIdx: null,
       currents: {
@@ -205,33 +204,34 @@ export default {
         recovered: 0,
         dRecovered: 0,
         active: 0,
-        dActive: 0
-      }
+        dActive: 0,
+      },
     };
   },
   computed: {
-    ...mapGetters(["rows", "rowStats", "series", "totalStats", "currentDate", "currentCountries"])
+    ...mapGetters(['rows', 'rowStats', 'series', 'totalStats', 'currentDate', 'currentCountries']),
   },
   async created() {
     this.initialChartWidth = screen.width - 20 - 700;
-    await this.$store.dispatch("pull");
-    this.$store.dispatch("getSnapshot");
-    this.$store.dispatch("getTimeseries");
+    this.initialChartHeight = screen.height;
+    await this.$store.dispatch('pull');
+    this.$store.dispatch('getSnapshot');
+    this.$store.dispatch('getTimeseries');
   },
   watch: {
     currentDate() {
       this.updateCurrentDate();
       this.updateMainStats();
-    }
+    },
   },
   mounted() {},
   methods: {
     selectDate(date, state, dateIndex) {
       // dataIndex is undefined
       if (state === 2) {
-        this.$store.dispatch("getSnapshot", date, dateIndex);
+        this.$store.dispatch('getSnapshot', date, dateIndex);
       } else if (state === 0) {
-        this.$store.dispatch("getSnapshot");
+        this.$store.dispatch('getSnapshot');
       } else if (state === -1) {
         this.focusDateIdx = -1;
       } else {
@@ -246,13 +246,13 @@ export default {
       this.snapshotMode = mode;
     },
     updateCurrentDate() {
-      let m = moment(this.currentDate);
-      this.humanDate = m.format("ddd, D MMM YY");
-      let distDate = moment.duration(m.diff(moment().format("YYYY-MM-DD"))).asDays();
+      const m = moment(this.currentDate);
+      this.humanDate = m.format('ddd, D MMM YY');
+      let distDate = moment.duration(m.diff(moment().format('YYYY-MM-DD'))).asDays();
       if (distDate === 0) {
-        distDate = "today";
+        distDate = 'today';
       } else {
-        distDate = moment.duration(-Math.abs(distDate), "days").humanize(true);
+        distDate = moment.duration(-Math.abs(distDate), 'days').humanize(true);
       }
       this.distDate = distDate;
     },
@@ -263,14 +263,13 @@ export default {
     },
     nFormat,
     dFormat,
-    gridChange(stats) {},
     resetCountries() {
-      this.$store.dispatch("updateCountries", null);
+      this.$store.dispatch('updateCountries', null);
     },
     toggleCountry(country) {
-      this.$store.dispatch("updateCountries", country);
-    }
-  }
+      this.$store.dispatch('updateCountries', country);
+    },
+  },
 };
 </script>
 
@@ -278,24 +277,24 @@ export default {
 @import 'assets/styles/common'
 
 div
-  box-sizing: border-box
+  box-sizing border-box
 
 #app
-  margin: auto
-  padding: 0
-  font-family: 'Libre Franklin', sans-serif
-  font-family: 'Roboto Condensed', sans-serif
-  font-weight: 200
-  font-size: 12px
-  position: absolute
-  overflow: hidden
-  left: 10px
-  top: 10px
-  right: 10px
-  bottom: 15px
-  display: flex
-  flex-direction: column
-  align-items: stretch
+  margin auto
+  padding 0
+  font-family 'Libre Franklin', sans-serif
+  font-family 'Roboto Condensed', sans-serif
+  font-weight 200
+  font-size 12px
+  position absolute
+  overflow hidden
+  left 10px
+  top 10px
+  right 10px
+  bottom 15px
+  display flex
+  flex-direction column
+  align-items stretch
 
 #logo
   background-image url('./assets/images/sars-cov-2.png')
@@ -308,97 +307,96 @@ div
   top 0
   left 0
 
-
 .app-body
-  max-height: calc(100% - 39px)
+  max-height calc(100% - 39px)
   position relative
-  flex: 1 1 auto
-  display: flex
-  flex-direction: row
-  align-items: stretch
+  flex 1 1 auto
+  display flex
+  flex-direction row
+  align-items stretch
 
 .app-header
-  flex: 0 0 auto
-  display: flex
-  flex-direction: row
-  align-items: flex-end
-  padding-left: 12px
+  flex 0 0 auto
+  display flex
+  flex-direction row
+  align-items flex-end
+  padding-left 12px
 
   > div
-    flex: 0 0 auto
+    flex 0 0 auto
 
   .indicator
-    display: flex
-    padding: 3px
-    flex-direction: column
-    align-items: center
+    display flex
+    padding 3px
+    flex-direction column
+    align-items center
 
     &.date
-      margin: 0 10px
-      align-items: center
-      width: 120px
+      margin 0 10px
+      align-items center
+      width 120px
 
     .human-date
-      font-size: 16px
-      font-weight: 700
-      color: #ff9900
+      font-size 16px
+      font-weight 700
+      color #ff9900
 
     .heading
-      color: #707070
-      font-size: 16px
-      font-weight: 400
-      font-family: 'Slabo 27px'
+      color #707070
+      font-size 16px
+      font-weight 400
+      font-family 'Slabo 27px'
 
     .numbers
-      font-size: 16px
-      padding: 0 0 0 0
+      font-size 16px
+      padding 0 0 0 0
 
       & > span
-        font-weight: 700
+        font-weight 700
 
         &:first-child
-          border-right: 1px solid #e0e0e0
-          padding-right: 5px
+          border-right 1px solid #e0e0e0
+          padding-right 5px
 
         &:nth-child(2)
-          padding-left: 5px
+          padding-left 5px
 
   .countries
-    padding: 2px 0 0 0
-    display: flex
-    flex-direction: row
-    flex-wrap: wrap
-    justify-content: flex-start
-    align-items: flex-start
-    align-content: flex-start
-    align-self: flex-start
-    margin-left: 20px
-    flex: 1 1 auto
+    padding 2px 0 0 0
+    display flex
+    flex-direction row
+    flex-wrap wrap
+    justify-content flex-start
+    align-items flex-start
+    align-content flex-start
+    align-self flex-start
+    margin-left 20px
+    flex 1 1 auto
 
     .country
-      display: inline-block
-      padding: 1px 3px
-      margin: 0 3px 3px 0
-      // color: #ff6600
-      // border: 1px solid $c-line-normal
-      border-radius: 3px
-      color: white
-      font-weight: 400
-      font-size: 10px
+      display inline-block
+      padding 1px 3px
+      margin 0 3px 3px 0
+      // color #ff6600
+      // border 1px solid $c-line-normal
+      border-radius 3px
+      color white
+      font-weight 400
+      font-size 10px
 
 .mode-select
-  padding-bottom: 8px
-  display: flex
-  flex-direction: row
+  padding-bottom 8px
+  display flex
+  flex-direction row
 
   .symbol
-    border-bottom: 1px solid $c-line-normal
+    border-bottom 1px solid $c-line-normal
 
     &[data-select='true']
-      border-bottom: 1px solid $c-line-select
+      border-bottom 1px solid $c-line-select
 
 #grid
-  flex: 0 0 auto
+  flex 0 0 auto
 
 #charts-wrapper
   overflow-x auto
@@ -411,30 +409,29 @@ div
 
   #charts
     .chart:first-child
-      margin-top: 0
-
+      margin-top 0
 
 .numbers .confirmed
-  color: $c-confirmed
+  color $c-confirmed
 
 .numbers .dConfirmed
-  color: darken($c-confirmed, 30%)
+  color darken($c-confirmed, 30%)
 
 .numbers .deceased
-  color: $c-deceased
+  color $c-deceased
 
 .numbers .dDeceased
-  color: darken($c-deceased, 30%)
+  color darken($c-deceased, 30%)
 
 .numbers .recovered
-  color: $c-recovered
+  color $c-recovered
 
 .numbers .dRecovered
-  color: darken($c-recovered, 30%)
+  color darken($c-recovered, 30%)
 
 .numbers .active
-  color: $c-active
+  color $c-active
 
 .numbers .dActive
-  color: darken($c-active, 20%)
+  color darken($c-active, 20%)
 </style>

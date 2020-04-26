@@ -1,20 +1,25 @@
-import axios from "axios";
-import { Table, predicate } from "apache-arrow";
-import moment from "moment";
-import { reduce, each, clone, meanBy } from "lodash";
-import { dates } from "../../public/data/summary.json";
-import { dateMap, fields, measures, categories } from "../libs/common";
+/* eslint-disable no-param-reassign */
+import axios from 'axios';
+import { Table, predicate } from 'apache-arrow';
+import moment from 'moment';
+import {
+  reduce, each, clone, meanBy,
+} from 'lodash';
+import { dates } from '../../public/data/summary.json';
+import {
+  dateMap, fields, measures, categories,
+} from './common';
 
 let table = null;
 
-const measuresForExt = ["d2Confirmed", "d2Deceased", "d2Recovered", "d2Active"];
+const measuresForExt = ['d2Confirmed', 'd2Deceased', 'd2Recovered', 'd2Active'];
 
 async function pull() {
   if (table) {
     return table;
   }
-  const { data } = await axios.get("data/covid-19.arrow", {
-    responseType: "arraybuffer"
+  const { data } = await axios.get('data/covid-19.arrow', {
+    responseType: 'arraybuffer',
   });
   table = await Table.from([data]);
   return table;
@@ -24,19 +29,25 @@ function scan(predicates) {
   const rows = [];
   const binder = {};
   const stats = {};
+  const metrics = {
+    max: Number.MIN_SAFE_INTEGER,
+    min: Number.MAX_SAFE_INTEGER,
+    sum: 0,
+    count: 0,
+  };
 
-  each(measures, measure => {
+  each(measures, (measure) => {
     stats[measure] = clone(metrics);
   });
 
   table.filter(predicates).scan(
-    idx => {
+    (idx) => {
       const row = {};
-      each(categories, category => {
+      each(categories, (category) => {
         const v = binder[category](idx);
         row[category] = v;
       });
-      each(measures, measure => {
+      each(measures, (measure) => {
         const v = binder[measure](idx);
         row[measure] = v;
         if (stats[measure].min > v) {
@@ -45,40 +56,40 @@ function scan(predicates) {
           stats[measure].max = v;
         }
         stats[measure].sum += v;
-        stats[measure].count++;
+        stats[measure].count += 1;
       });
       rows.push(row);
     },
-    batch => {
-      each(fields, field => {
+    (batch) => {
+      each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    }
+    },
   );
   return { rows, stats };
 }
 
 function snapshotAt(date) {
-  return scan(predicate.col("date").eq(moment(date).unix()));
+  return scan(predicate.col('date').eq(moment(date).unix()));
 }
 
 function timeseriesOf([country, ...countries]) {
   const predicates = reduce(
     countries,
-    (preds, country) => preds.or(predicate.col("country").eq(country)),
-    predicate.col("country").eq(country)
+    (preds, countri) => preds.or(predicate.col('country').eq(countri)),
+    predicate.col('country').eq(country),
   );
   return scan(predicates);
 }
 
-function collectFields(binder, idx, fields, row) {
-  each(fields, field => {
+function collectFields(binder, idx, fields2, row) {
+  each(fields2, (field) => {
     row[field] = binder[field](idx);
   });
 }
 
 function collectStats(binder, idx, row, stats, collector) {
-  each(measures, measure => {
+  each(measures, (measure) => {
     const v = binder[measure](idx);
     const stat = stats[measure];
     row[measure] = v;
@@ -91,12 +102,12 @@ function collectStats(binder, idx, row, stats, collector) {
       stat.max = v;
     }
     stat.sum += v;
-    stat.count++;
+    stat.count += 1;
   });
 }
 
 function extSnapshotAt(dateIndex, days) {
-  if (typeof dateIndex === "string") {
+  if (typeof dateIndex === 'string') {
     dateIndex = dateMap[dateIndex];
   }
   const rows = [];
@@ -109,23 +120,23 @@ function extSnapshotAt(dateIndex, days) {
     max: Number.MIN_SAFE_INTEGER,
     min: Number.MAX_SAFE_INTEGER,
     sum: 0,
-    count: 0
+    count: 0,
   };
 
-  let dateFilter = predicate
-    .col("dateIndex")
+  const dateFilter = predicate
+    .col('dateIndex')
     .ge(dateIndexStart)
-    .and(predicate.col("dateIndex").le(dateIndex));
+    .and(predicate.col('dateIndex').le(dateIndex));
 
-  each(measures, measure => {
+  each(measures, (measure) => {
     stats[measure] = clone(metrics);
   });
 
   table.filter(dateFilter).scan(
-    idx => {
+    (idx) => {
       const row = {
-        __mean__: {},
-        selected: false
+        means: {},
+        selected: false,
       };
       const dateIdx = binder.dateIndex(idx);
       const country = binder.country(idx);
@@ -133,7 +144,7 @@ function extSnapshotAt(dateIndex, days) {
       if (!ext[country]) {
         ext[country] = {
           history: [],
-          row: null
+          row: null,
         };
       }
       if (dateIdx === dateIndex) {
@@ -147,19 +158,19 @@ function extSnapshotAt(dateIndex, days) {
         ext[country].history.push(row);
       }
     },
-    batch => {
-      each(fields, field => {
+    (batch) => {
+      each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    }
+    },
   );
 
   each(ext, ({ history, row }, country) => {
     ext[country].means = {};
-    each(measuresForExt, measure => {
-      let mean = meanBy(history, measure);
+    each(measuresForExt, (measure) => {
+      const mean = meanBy(history, measure);
       ext[country].means[measure] = mean;
-      row.__mean__[measure] = mean;
+      row.means[measure] = mean;
     });
   });
 
@@ -174,35 +185,36 @@ function extTimeSeriesOf([country, ...countries] = []) {
     count: 0,
     // of all selected countries
     maxSum: Number.MIN_SAFE_INTEGER,
-    minSum: Number.MAX_SAFE_INTEGER
+    minSum: Number.MAX_SAFE_INTEGER,
   };
 
   const stats = {};
   const series = [];
   const binder = {};
 
-  each(measures, measure => {
+  each(measures, (measure) => {
     stats[measure] = clone(metrics);
   });
 
-  each(dates, date => {
+  each(dates, (date) => {
     const dateIndex = dateMap[date];
     series[dateIndex] = {
       // rows: [],
       sum: {},
-      countries: {}
+      countries: {},
     };
-    each(measures, measure => {
+    each(measures, (measure) => {
       series[dateIndex].sum[measure] = 0;
     });
   });
 
-  let filter, predicates;
+  let filter;
+  let predicates;
   if (country) {
     predicates = reduce(
       countries,
-      (preds, country) => preds.or(predicate.col("country").eq(country)),
-      predicate.col("country").eq(country)
+      (preds, countri) => preds.or(predicate.col('country').eq(countri)),
+      predicate.col('country').eq(country),
     );
     filter = table.filter(predicates);
   } else {
@@ -210,14 +222,14 @@ function extTimeSeriesOf([country, ...countries] = []) {
   }
 
   filter.scan(
-    idx => {
+    (idx) => {
       const row = {};
       const dateIndex = binder.dateIndex(idx);
-      const country = binder.country(idx);
+      const countri = binder.country(idx);
 
       collectFields(binder, idx, categories, row);
-      each(measures, measure => {
-        let v = binder[measure](idx);
+      each(measures, (measure) => {
+        const v = binder[measure](idx);
         const stat = stats[measure];
         row[measure] = v;
         if (stat.min > v) {
@@ -226,8 +238,8 @@ function extTimeSeriesOf([country, ...countries] = []) {
           stat.max = v;
         }
         stat.sum += v;
-        stat.count++;
-        let sum = series[dateIndex].sum[measure] + v;
+        stat.count += 1;
+        const sum = series[dateIndex].sum[measure] + v;
         if (stat.maxSum < sum) {
           stat.maxSum = sum;
         }
@@ -236,18 +248,20 @@ function extTimeSeriesOf([country, ...countries] = []) {
         }
         series[dateIndex].sum[measure] = sum;
       });
-      series[dateIndex].countries[country] = row;
+      series[dateIndex].countries[countri] = row;
       // series[dateIndex].rows.push(row);
     },
-    batch => {
-      each(fields, field => {
+    (batch) => {
+      each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    }
+    },
   );
 
   // TO DO: running average
   return { stats, series };
 }
 
-export { pull, snapshotAt, timeseriesOf, extSnapshotAt, extTimeSeriesOf };
+export {
+  pull, snapshotAt, timeseriesOf, extSnapshotAt, extTimeSeriesOf,
+};
