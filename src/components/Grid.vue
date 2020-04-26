@@ -169,6 +169,7 @@ export default {
   position: relative
 
 .rows-wrapper
+  padding-right 8px
   display: flex
   flex-direction: column
   overflow-x: hidden

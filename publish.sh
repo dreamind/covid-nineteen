@@ -1,5 +1,6 @@
-# make sure working git is clean
-# assume the latest data has been pulled into COVID-19 folder from CSSEGISandData/COVID-19.git
+#!/usr/bin/env bash
+# Make sure working git is clean
+# Asssume the latest data has been pulled into COVID-19 folder from CSSEGISandData/COVID-19.git
 git checkout master
 node scripts/get-covid-data.js
 git add .
@@ -14,3 +15,4 @@ cp -R ~/tmp/covid-nineteen-build/. .
 git add .
 git commit -m "Data update on $(date)"
 git push origin gh-pages
+git checkout master

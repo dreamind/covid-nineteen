@@ -1,10 +1,10 @@
 <template>
-  <div class="row">
+  <div class="row" :class="selectedCls" @click="toggleCountry">
     <label class="tickbox">
       <input type="checkbox" value="row.country" v-model="row.selected" @click="toggleCountry" />
       <span></span>
     </label>
-    <div class="country" :style="columnWidthStyle(0)" :title="row.country" @click="toggleCountry">
+    <div class="country" :style="columnWidthStyle(0)" :title="row.country">
       {{ row.country }}
     </div>
     <cell
@@ -79,6 +79,7 @@ import { mixin as columnMixin } from "../mixins/columns";
 export default {
   name: "Row",
   props: {
+    selected: Boolean,
     log: Boolean,
     row: Object,
     mean: Object,
@@ -89,6 +90,12 @@ export default {
     Cell
   },
   computed: {
+    selectedCls () {
+      let { selected } = this.row;
+      return {
+        selected
+      }
+    },
     ...mapGetters(["rowStats"])
   },
   data() {
@@ -121,10 +128,13 @@ export default {
   height: 15px
   line-height: 16px
   margin-bottom: 1px
+  cursor pointer
 
 .row:hover
   background-color: #f0f0f0
 
+.row.selected
+  background-color: $c-selected-light
 
 .row > div
   flex: 0 1 auto
@@ -139,7 +149,6 @@ export default {
   overflow: hidden
   text-overflow: ellipsis
   line-height: 16px
-  cursor pointer
 
 .confirmed .bars
   .bar.value

@@ -95,7 +95,7 @@
 <script>
 import { mapGetters } from "vuex";
 import moment from "moment";
-import { reduce, each, last } from "lodash";
+import { reduce, each, last, max } from "lodash";
 import {
   measures,
   calcGridInterval,
@@ -303,7 +303,7 @@ export default {
       if (selectedMeasures.length === 1) {
         measure = selectedMeasures[0];
       }
-      let interval = calcGridInterval(maxV);
+      let interval = calcGridInterval(max([Math.abs(maxV), Math.abs(minV)]));
       let start = Math.ceil(minV / interval);
       let v = start < 0 ? start * interval : 0;
       let gridY = [];
@@ -488,7 +488,7 @@ export default {
 };
 </script>
 
-<style scoped lang="stylus">
+<style lang="stylus">
 @import '../assets/styles/vars'
 
 .tip

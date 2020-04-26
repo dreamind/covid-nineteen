@@ -92,7 +92,7 @@
           <Chart
             title="Total Confirmed"
             :selectedMeasures="['deceased', 'recovered', 'active']"
-            :height="180"
+            :height="130"
             :width="chartWidth"
             :mode="timeseriesMode"
             :focusDateIdx="focusDateIdx"
@@ -100,9 +100,19 @@
             @selectDate="selectDate"
           />
           <Chart
+            title="Daily Confirmed"
+            :selectedMeasures="['dConfirmed']"
+            :height="70"
+            :width="chartWidth"
+            :mode="timeseriesMode"
+            :focusDateIdx="focusDateIdx"
+            :initialChartWidth="initialChartWidth"
+            @selectDate="selectDate"
+          />          
+          <Chart
             title="Daily Deceased"
             :selectedMeasures="['dDeceased']"
-            :height="90"
+            :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
             :focusDateIdx="focusDateIdx"
@@ -112,7 +122,7 @@
           <Chart
             title="Daily Recovered"
             :selectedMeasures="['dRecovered']"
-            :height="90"
+            :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
             :focusDateIdx="focusDateIdx"
@@ -122,7 +132,7 @@
           <Chart
             title="Daily Active"
             :selectedMeasures="['dActive']"
-            :height="90"
+            :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
             :focusDateIdx="focusDateIdx"
@@ -267,6 +277,9 @@ export default {
 <style lang="stylus">
 @import 'assets/styles/common'
 
+div
+  box-sizing: border-box
+
 #app
   margin: auto
   padding: 0
@@ -397,13 +410,9 @@ export default {
   right 0
 
   #charts
-    flex: 1 1 auto
+    .chart:first-child
+      margin-top: 0
 
-    .chart
-      flex 1 1 auto
-
-div
-  box-sizing: border-box
 
 .numbers .confirmed
   color: $c-confirmed
