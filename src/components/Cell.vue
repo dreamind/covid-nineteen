@@ -25,21 +25,14 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { max } from 'lodash';
 import {
-  dateMap,
-  fields,
-  measures,
-  modeHeadingMap,
-  sorterMap,
-  columns,
   nFormat,
-  dFormat
-} from "../libs/common";
-import { max } from "lodash";
+  dFormat,
+} from '../libs/common';
 
 export default {
-  name: "Cell",
+  name: 'Cell',
   props: {
     log: Boolean,
     row: Object,
@@ -52,15 +45,15 @@ export default {
     maxDValue: Number,
     barWidth: Number,
     labelWidth: Number,
-    mode: Number // 0 = both, 1 = value only, 2 = dValue only
+    mode: Number, // 0 = both, 1 = value only, 2 = dValue only
   },
   created() {},
   computed: {
     dValueBarCls() {
       if (this.dValue < 0) {
-        return "negative";
+        return 'negative';
       }
-      return "";
+      return '';
     },
     allWidth() {
       return this.barWidth + 2 * this.labelWidth + 2;
@@ -101,7 +94,7 @@ export default {
     },
     dValueWidthPx() {
       return `${this.dValueWidth}px`;
-    }
+    },
   },
   mounted() {},
   methods: {
@@ -109,8 +102,8 @@ export default {
     dFormat,
     calcWidth(number) {
       return Math.ceil((number * this.barWidth) / this.currentMax); // minimum 1px
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -120,48 +113,42 @@ $size = 16px
 $line-height = 16px
 
 .cell
-  display: flex
-  flex-direction: row
-  height: $size
-  line-height: $size
-  font-family: 'Fira Code', sans-serif
-  font-weight: 300
-  font-family: 'Nanum Gothic Coding', sans-serif
-  font-family: 'Roboto Condensed', sans-serif
-  font-weight: 300
-
+  display flex
+  flex-direction row
+  height $size
+  line-height $size
+  font-family 'Fira Code', sans-serif
+  font-weight 300
+  font-family 'Nanum Gothic Coding', sans-serif
+  font-family 'Roboto Condensed', sans-serif
+  font-weight 300
 
 .value-label
-  padding-right: 4px
-  text-align: right
-  line-height: $line-height
-
+  padding-right 4px
+  text-align right
+  line-height $line-height
 
 .bars
-  text-align: left
-  position: relative
-  display: flex
-  flex-direction: row
-
+  text-align left
+  position relative
+  display flex
+  flex-direction row
 
 .cell > *
-  flex: 0 0 auto
-
+  flex 0 0 auto
 
 .bars .value
-  box-sizing: border-box
-  display: inline-block
-  height: $size
-  position: relative
-  margin-right: 1px
-
+  box-sizing border-box
+  display inline-block
+  height $size
+  position relative
+  margin-right 1px
 
 .bars .d-value
-  box-sizing: border-box
-  height: $size
-
+  box-sizing border-box
+  height $size
 
 .d-value-label
-  padding-left: 4px
-  line-height: $line-height
+  padding-left 4px
+  line-height $line-height
 </style>

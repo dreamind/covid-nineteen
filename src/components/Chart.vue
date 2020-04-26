@@ -66,9 +66,7 @@
           :y="`${dateY}px`"
           width="100px"
           style="text-anchor: middle;"
-        >
-          {{ month }}
-        </text>
+        >{{ month }}</text>
         <line
           v-if="tick"
           class="tick"
@@ -93,11 +91,10 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import moment from "moment";
-import { reduce, each, last, max } from "lodash";
+import { mapGetters } from 'vuex';
+import moment from 'moment';
+import { each, last, max } from 'lodash';
 import {
-  measures,
   calcGridInterval,
   columnMap,
   nFormat,
@@ -106,11 +103,11 @@ import {
   palette,
   TIMESERIES_COMBINED,
   TIMESERIES_COMPARED,
-  TIMESERIES_BOTH
-} from "../libs/common";
+  TIMESERIES_BOTH,
+} from '../libs/common';
 
 export default {
-  name: "Chart",
+  name: 'Chart',
   props: {
     countriesSelected: Array,
     selectedMeasures: Array,
@@ -119,7 +116,7 @@ export default {
     width: Number,
     mode: Number,
     initialChartWidth: Number,
-    focusDateIdx: Number
+    focusDateIdx: Number,
   },
   data() {
     return {
@@ -133,7 +130,7 @@ export default {
       dateRange: [],
       dateNum: 0,
       bars: [],
-      path: "",
+      path: '',
       countryPaths: [],
       gridY: [],
       widthX: 0,
@@ -148,60 +145,63 @@ export default {
       isTipping: false,
       tipStyle: {},
       tipWidth: 60,
-      tipContent: "",
+      tipContent: '',
       tipCache: {},
       showLines: false,
       showBars: true,
       effectiveWidth: 0,
       effectiveHeight: 0,
-      tipTimeout: null
+      tipTimeout: null,
     };
   },
   mounted() {},
   computed: {
     ...mapGetters([
-      "dates",
-      "series",
-      "seriesStats",
-      "currentDate",
-      "currentDateIdx",
-      "currentCountries"
-    ])
+      'dates',
+      'series',
+      'seriesStats',
+      'currentDate',
+      'currentDateIdx',
+      'currentCountries',
+    ]),
   },
   methods: {
-    selectBar(index, event) {
-      let rect = event.target;
-      let bar = this.bars[index];
+    selectBar(index) {
+      const bar = this.bars[index];
       let state;
-      let { stacks, date, dateIndex, highlight } = bar;
+      const { date, highlight } = bar;
       if (highlight !== 2) {
         state = 2;
       } else {
         state = 0;
       }
-      this.$emit("selectDate", date, state);
+      this.$emit('selectDate', date, state);
     },
     tipOn(index, event) {
-      let { barWidth, bars, selectedMeasures, oy, ox } = this;
-      let bar = bars[index];
-      let { stacks, dateTip, date, dateIndex } = bar;
-      let rect = event.target;
-      let svg = rect.parentElement.parentElement;
-      let tipCache = this.tipCache[index];
-      let { tipStyle, tipContent } = tipCache ? tipCache : {};
+      const {
+        barWidth, bars, selectedMeasures, oy, ox,
+      } = this;
+      const bar = bars[index];
+      const {
+        stacks, dateTip, date, dateIndex,
+      } = bar;
+      const rect = event.target;
+      // const svg = rect.parentElement.parentElement;
+      const tipCache = this.tipCache[index];
+      let { tipStyle, tipContent } = tipCache || {};
 
-      this.$emit("selectDate", date, 1, dateIndex);
+      this.$emit('selectDate', date, 1, dateIndex);
       if (!tipCache) {
-        let x = parseInt(rect.getAttribute("x"));
-        let y = parseInt(rect.getAttribute("y"));
+        const x = parseInt(rect.getAttribute('x'), 10);
+        // const y = parseInt(rect.getAttribute('y'));
         tipStyle = {
           left: `${x + barWidth + ox + 27}px`,
-          top: `${oy}px`
+          top: `${oy}px`,
         };
-        tipContent = dateTip + "<br />";
-        each(selectedMeasures, measure => {
-          let v = stacks[measure].v;
-          if (measure.startsWith("d")) {
+        tipContent = `${dateTip}<br />`;
+        each(selectedMeasures, (measure) => {
+          let { v } = stacks[measure];
+          if (measure.startsWith('d')) {
             v = dFormat(v);
           } else {
             v = nFormat(v);
@@ -210,7 +210,7 @@ export default {
         });
         this.tipCache[index] = {
           tipContent,
-          tipStyle
+          tipStyle,
         };
       }
       this.tipStyle = tipStyle;
@@ -220,19 +220,18 @@ export default {
       //   clearTimeout(this.tipTimeout)
       // }
     },
-    tipOff(index, event) {
-      let me = this;
-      let bar = this.bars[index];
-      this.$emit("selectDate", bar.date, -1, bar.dateIndex);
+    tipOff(index) {
+      const me = this;
+      const bar = this.bars[index];
+      this.$emit('selectDate', bar.date, -1, bar.dateIndex);
       me.isTipping = false;
       // this.tipTimeout = setTimeout(function () {
       //   me.isTipping = false;
       // }, 100)
     },
     calcContext() {
-      let {
+      const {
         oy,
-        width,
         height,
         tickLength,
         dates,
@@ -241,18 +240,20 @@ export default {
         selectedMeasures,
         seriesStats,
         tipWidth,
-        mode
+        mode,
       } = this;
       let maxV = 0;
       let minV = 0;
       let singleMinV = 0;
       let singleMaxV = 0;
-      each(selectedMeasures, measure => {
-        let { maxSum, minSum, max, min } = seriesStats[measure];
+      each(selectedMeasures, (measure) => {
+        const {
+          maxSum, minSum, max: sMax, min: sMin,
+        } = seriesStats[measure];
         maxV += maxSum;
         minV += minSum;
-        singleMaxV += max;
-        singleMinV += min;
+        singleMaxV += sMax;
+        singleMinV += sMin;
       });
       if (mode === TIMESERIES_COMPARED && currentCountries.length) {
         minV = singleMinV;
@@ -268,7 +269,7 @@ export default {
       if (maxV < 0) {
         maxV = 0;
       }
-      let rangeV = maxV - minV;
+      const rangeV = maxV - minV;
       this.zeroY = oy + Math.ceil((maxV * height) / rangeV);
       this.maxV = maxV;
       this.minV = minV;
@@ -278,11 +279,10 @@ export default {
       this.maxY = oy + height;
       this.dateY = oy + height + tickLength + dateLabelGap;
       this.dateRange = dates;
-      let dateNum = dates.length;
+      const dateNum = dates.length;
       this.dateNum = dateNum;
 
-      width = this.initialChartWidth;
-      let barWidth = Math.floor((width - tipWidth) / dateNum);
+      let barWidth = Math.floor((this.initialChartWidth - tipWidth) / dateNum);
       if (barWidth % 2 !== 0) {
         // make sure it's even number
         barWidth -= 1;
@@ -298,21 +298,23 @@ export default {
       this.effectiveHeight = this.dateY + this.dateLabelHeight;
     },
     calcGrid() {
-      let { ox, oy, height, widthX, selectedMeasures, maxV, minV } = this;
-      let measure = "confirmed";
+      const {
+        ox, widthX, selectedMeasures, maxV, minV,
+      } = this;
+      let measure = 'confirmed';
       if (selectedMeasures.length === 1) {
-        measure = selectedMeasures[0];
+        [measure] = selectedMeasures; // get first element
       }
-      let interval = calcGridInterval(max([Math.abs(maxV), Math.abs(minV)]));
-      let start = Math.ceil(minV / interval);
+      const interval = calcGridInterval(max([Math.abs(maxV), Math.abs(minV)]));
+      const start = Math.ceil(minV / interval);
       let v = start < 0 ? start * interval : 0;
-      let gridY = [];
+      const gridY = [];
       do {
-        let y = this.zeroY - this.mapVtoH(v, measure);
+        const y = this.zeroY - this.mapVtoH(v, measure);
         gridY.push({
           v: sFormat(v),
           y,
-          d: `M${ox} ${y} L${widthX} ${y}`
+          d: `M${ox} ${y} L${widthX} ${y}`,
         });
         v += interval;
       } while (v < maxV);
@@ -320,26 +322,31 @@ export default {
     },
     mapVtoH(v, measure) {
       const { height, rangeV } = this;
-      const useSemiLog = false; //selectedMeasures.length > 1;
+      const useSemiLog = false; // selectedMeasures.length > 1;
       let h = Math.ceil((v * height) / rangeV);
       if (useSemiLog && measure) {
-        let maxSum = this.seriesStats[measure].maxSum;
-        h = Math.ceil((Math.log10(v + 1) * height * maxSum) / (rangeV * Math.log10(maxSum + 1)));
+        const { maxSum } = this.seriesStats[measure];
+        h = Math.ceil(
+          (Math.log10(v + 1) * height * maxSum)
+            / (rangeV * Math.log10(maxSum + 1)),
+        );
       }
       return h;
     },
     calcBars() {
-      const { height, barWidth, ox, oy, selectedMeasures, dates, currentCountries, maxV } = this;
+      const {
+        barWidth, ox, selectedMeasures, dates, currentCountries,
+      } = this;
       let x = ox;
       const bars = [];
-      let path = "";
+      let path = '';
       const lastMeasure = last(selectedMeasures);
       const countryPaths = {};
 
       each(currentCountries, (country, i) => {
         countryPaths[country] = {
-          d: "",
-          color: palette[i % palette.length]
+          d: '',
+          color: palette[i % palette.length],
         };
       });
 
@@ -350,20 +357,20 @@ export default {
         const m = moment(date);
         const dateOfMonth = m.date();
         const dayOfWeek = m.day();
-        const dateTip = m.format("D MMM");
+        const dateTip = m.format('D MMM');
         let month = null;
         let tick = false;
 
         if (dateOfMonth === 1) {
-          month = m.format("MMM");
+          month = m.format('MMM');
         }
         if (dayOfWeek === 1) {
           // Monday
           tick = true;
         }
-        each(selectedMeasures, measure => {
+        each(selectedMeasures, (measure) => {
           const v = this.series[index].sum[measure];
-          let h = this.mapVtoH(v, measure);
+          const h = this.mapVtoH(v, measure);
           y -= h;
           stacks[measure] = {
             x,
@@ -371,7 +378,7 @@ export default {
             w: barWidth,
             h: Math.abs(h),
             v,
-            date
+            date,
           };
         });
         // construct bar
@@ -383,12 +390,12 @@ export default {
           stacks,
           month,
           tick,
-          highlight: 0 // 1 = hover, 2 = selected
+          highlight: 0, // 1 = hover, 2 = selected
         };
         bars.push(bar);
 
         // construct path
-        let px = x + barWidth / 2;
+        const px = x + barWidth / 2;
         let py = stacks[lastMeasure].y;
         if (index === 0) {
           path = `M${px} ${py} `;
@@ -396,16 +403,16 @@ export default {
           path += `L${px} ${py} `;
         }
 
-        let countries = this.series[index].countries;
+        const { countries } = this.series[index];
         if (index === 0) {
-          each(currentCountries, country => {
-            let row = countries[country];
+          each(currentCountries, (country) => {
+            const row = countries[country];
             py = this.zeroY - this.mapVtoH(row[lastMeasure]);
             countryPaths[country].d += `M${px} ${py} `;
           });
         } else {
-          each(currentCountries, country => {
-            let row = countries[country];
+          each(currentCountries, (country) => {
+            const row = countries[country];
             py = this.zeroY - this.mapVtoH(row[lastMeasure]);
             countryPaths[country].d += `L${px} ${py} `;
           });
@@ -445,14 +452,14 @@ export default {
       }
     },
     updateForCurrentDate() {
-      each(this.bars, bar => {
+      each(this.bars, (bar) => {
         if (bar.date === this.currentDate) {
-          this.$set(bar, "highlight", 2);
+          this.$set(bar, 'highlight', 2);
         } else if (bar.highlight === 2) {
-          this.$set(bar, "highlight", 0);
+          this.$set(bar, 'highlight', 0);
         } // keep highlight = 1 (hover) as it is
       });
-    }
+    },
   },
   watch: {
     focusDateIdx(newDateIdx, oldDateIdx) {
@@ -461,13 +468,13 @@ export default {
       if (oldDateIdx > 0) {
         bar = this.bars[oldDateIdx];
         if (bar.highlight !== 2) {
-          this.$set(bar, "highlight", 0);
+          this.$set(bar, 'highlight', 0);
         }
       }
       if (newDateIdx > 0) {
         bar = this.bars[newDateIdx];
         if (bar.highlight !== 2) {
-          this.$set(bar, "highlight", 1);
+          this.$set(bar, 'highlight', 1);
         }
       }
     },
@@ -483,8 +490,8 @@ export default {
     },
     currentCountries() {
       this.updateMode();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -550,8 +557,8 @@ export default {
   pointer-events: none
 
 rect.base
-  stroke transparen
-  stroke-width 1
+  stroke: transparen
+  stroke-width: 1
 
 rect.base:hover
   fill: $c-hover

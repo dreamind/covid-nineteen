@@ -1,8 +1,8 @@
 const mixin = {
-  data: function() {
+  data() {
     return {
       labelWidth: 45,
-      barWidths: [70, 60, 60, 60, 60]
+      barWidths: [70, 60, 60, 60, 60],
     };
   },
   methods: {
@@ -13,12 +13,13 @@ const mixin = {
       } else {
         width = this.barWidths[col] + 2 * this.labelWidth + 2;
       }
-      width += "px";
+      width += 'px';
       return {
-        width
+        width,
       };
-    }
-  }
+    },
+  },
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export { mixin };

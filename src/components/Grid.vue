@@ -32,34 +32,34 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import moment from "moment";
-import { orderBy, each } from "lodash";
-import { pull, snapshotAt, extSnapshotAt } from "../libs/data";
-import Row from "./Row.vue";
-import { mixin as columnMixin } from "../mixins/columns";
-import { measures, modeHeadingMap, sorterMap, columns, dFormat } from "../libs/common";
+import { mapGetters } from 'vuex';
+import { orderBy, each } from 'lodash';
+import Row from './Row.vue';
+import { mixin as columnMixin } from '../mixins/columns';
+import {
+  modeHeadingMap, sorterMap, columns,
+} from '../libs/common';
 
 export default {
-  name: "Grid",
+  name: 'Grid',
   mixins: [columnMixin],
   components: {
-    Row
+    Row,
   },
   props: {
     mode: Number,
-    msg: String
+    msg: String,
   },
   data() {
     return {
       countryReset: false,
       sortedRows: [],
       currentSorter: 1,
-      sorters: [0, 1, 0, 0, 0]
+      sorters: [0, 1, 0, 0, 0],
     };
   },
   computed: {
-    ...mapGetters(["rows", "rowStats", "currentDate", "currentCountries"])
+    ...mapGetters(['rows', 'rowStats', 'currentDate', 'currentCountries']),
   },
   watch: {
     mode() {
@@ -67,19 +67,19 @@ export default {
     },
     rows() {
       this.updateSorted();
-      this.$emit("change", this.rowStats);
-    }
+      this.$emit('change', this.rowStats);
+    },
   },
   methods: {
     updateSorted() {
       const c = this.currentSorter;
       const val = this.sorters[c];
-      const order = val === 1 ? "desc" : "asc";
+      const order = val === 1 ? 'desc' : 'asc';
       const field = this.mode === 2 ? columns[c].dField : columns[c].field;
       this.sortedRows = orderBy(this.rows, field, order);
     },
     setSorter(c, val) {
-      const { sorters, mode } = this;
+      const { sorters } = this;
       this.currentSorter = c;
       each(sorters, (sorter, i) => {
         if (i === c) {
@@ -92,20 +92,20 @@ export default {
     },
     modeHeading(c) {
       if (!c) {
-        return "Country";
+        return 'Country';
       }
       // let r = `${modeHeadingMap[this.mode]} ${columns[c].title}`;
       let r = `${modeHeadingMap[this.mode]}`;
       if (!this.mode) {
-        r += " (±New)";
+        r += ' (±New)';
       }
       return r;
     },
     headingWidthStyle(c) {
       let width = this.barWidths[c] + 2 * this.labelWidth + 2;
-      width += "px";
+      width += 'px';
       return {
-        width
+        width,
       };
     },
     sorterCls(c) {
@@ -114,13 +114,12 @@ export default {
     },
     resetCountries() {
       this.countryReset = false;
-      this.$emit("resetCountries");
+      this.$emit('resetCountries');
     },
     toggleCountry(country) {
-      this.$emit("toggleCountry", country);
-    }
+      this.$emit('toggleCountry', country);
+    },
   },
-  async mounted() {}
 };
 </script>
 
@@ -128,56 +127,56 @@ export default {
 @import '../assets/styles/vars'
 
 .grid-header
-  display: flex
-  flex-direction: row
-  margin-bottom: 7px
+  display flex
+  flex-direction row
+  margin-bottom 7px
 
   .tickbox
-    visibility: visible
-    padding-top: 2px
+    visibility visible
+    padding-top 2px
 
   .heading
-    font-family: 'Roboto Condensed', sans-serif
-    display: flex
-    flex-direction: row
-    justify-content: center
-    align-items: flex-end
+    font-family 'Roboto Condensed', sans-serif
+    display flex
+    flex-direction row
+    justify-content center
+    align-items flex-end
 
   .country
-    width: $w-country
+    width $w-country
 
 .sorter
-  margin-left: 4px
+  margin-left 4px
 
   span
-    font-family: 'Fira Code', sans-serif
-    font-weight: 300
-    color: #e0e0e0
-    cursor: pointer
+    font-family 'Fira Code', sans-serif
+    font-weight 300
+    color #e0e0e0
+    cursor pointer
 
 .sorter.desc
   & span:first-child
-    color: #707070
+    color #707070
 
 .sorter.asc
   & span:nth-child(2)
-    color: #707070
+    color #707070
 
 .grid
-  padding-right: 10px
-  margin-right: 10px
-  position: relative
+  padding-right 10px
+  margin-right 10px
+  position relative
 
 .rows-wrapper
   padding-right 8px
-  display: flex
-  flex-direction: column
-  overflow-x: hidden
-  overflow-y: auto
-  position: absolute
-  top: 23px
-  bottom: 0
-  left: 0
-  right: 0
+  display flex
+  flex-direction column
+  overflow-x hidden
+  overflow-y auto
+  position absolute
+  top 23px
+  bottom 0
+  left 0
+  right 0
   // height calc(100% - 16px)
 </style>
