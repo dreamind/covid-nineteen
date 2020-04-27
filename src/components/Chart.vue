@@ -1,14 +1,23 @@
 <template>
   <div class="chart">
     <div class="header">
-      <span class="vertical" :style="{ width: `${effectiveHeight}px` }">{{ title }}</span>
+      <span class="vertical" :style="{ width: `${effectiveHeight}px` }">{{
+        title
+      }}</span>
     </div>
-    <svg class="chart-svg" :width="effectiveWidth + 'px'" :height="`${effectiveHeight}px`">
-      <g :key="'grid-' + idx" v-for="(grid, idx) in gridY">
+    <svg
+      class="chart-svg"
+      :width="effectiveWidth + 'px'"
+      :height="`${effectiveHeight}px`"
+    >
+      <g v-for="(grid, idx) in gridY" :key="'grid-' + idx">
         <path class="grid" :d="grid.d" />
         <text :x="`${widthX + 3}`" :y="`${grid.y}`">{{ grid.v }}</text>
       </g>
-      <g v-for="({ x, date, stacks, month, tick, highlight }, index) in bars" :key="index">
+      <g
+        v-for="({ x, date, stacks, month, tick, highlight }, index) in bars"
+        :key="index"
+      >
         <g
           @mouseover="tipOn(index, $event)"
           @mouseout="tipOff(index, $event)"
@@ -25,9 +34,17 @@
             :height="maxY"
           />
           <!-- filler -->
-          <rect fill="transparent" :x="x + barWidth" :y="0" :width="1" :height="maxY" />
+          <rect
+            fill="transparent"
+            :x="x + barWidth"
+            :y="0"
+            :width="1"
+            :height="maxY"
+          />
         </g>
         <rect
+          v-for="measure in selectedMeasures"
+          v-show="showBars"
           :key="'r-' + measure"
           class="bar"
           :class="measure"
@@ -36,9 +53,7 @@
           :y="stacks[measure].y"
           :width="stacks[measure].w"
           :height="stacks[measure].h"
-          v-for="measure in selectedMeasures"
           :opacity="showLines ? 0.2 : 1.0"
-          v-show="showBars"
         />
         <!-- <circle
           :key="'c-' + measure"
@@ -51,10 +66,13 @@
           v-for="measure in selectedMeasures"
         />-->
       </g>
-      <g v-for="({ x, date, month, tick }, index) in bars" :key="'tick-' + index">
+      <g
+        v-for="({ x, date, month, tick }, index) in bars"
+        :key="'tick-' + index"
+      >
         <line
-          class="tickMonth"
           v-if="month"
+          class="tickMonth"
           :x1="`${x + barWidth / 2}px`"
           :y1="`${maxY}px`"
           :x2="`${x + barWidth / 2}px`"
@@ -66,7 +84,9 @@
           :y="`${dateY}px`"
           width="100px"
           style="text-anchor: middle;"
-        >{{ month }}</text>
+        >
+          {{ month }}
+        </text>
         <line
           v-if="tick"
           class="tick"
@@ -76,21 +96,27 @@
           :y2="`${maxY + 4}px`"
         />
       </g>
-      <path class="line" :d="path" v-show="false" />
+      <path v-show="false" class="line" :d="path" />
       <path
-        class="line"
-        :d="path.d"
-        :stroke="path.color"
-        :key="'country-path-' + idx"
-        v-for="(path, idx) in countryPaths"
+        v-for="(countryPath, idx) in countryPaths"
         v-show="showLines"
+        :key="'country-path-' + idx"
+        class="line"
+        :d="countryPath.d"
+        :stroke="countryPath.color"
       />
     </svg>
-    <div class="tip" v-show="isTipping" :style="tipStyle" v-html="tipContent"></div>
+    <div
+      v-show="isTipping"
+      class="tip"
+      :style="tipStyle"
+      v-html="tipContent"
+    ></div>
   </div>
 </template>
 
 <script>
+/* eslint-disable vue/no-v-html */
 import { mapGetters } from 'vuex';
 import moment from 'moment';
 import { each, last, max } from 'lodash';
@@ -109,14 +135,14 @@ import {
 export default {
   name: 'Chart',
   props: {
-    countriesSelected: Array,
-    selectedMeasures: Array,
-    title: String,
-    height: Number,
-    width: Number,
-    mode: Number,
-    initialChartWidth: Number,
-    focusDateIdx: Number,
+    countriesSelected: { type: Array, required: true },
+    selectedMeasures: { type: Array, required: true },
+    title: { type: String, required: true },
+    height: { type: Number, required: true },
+    width: { type: Number, required: true },
+    mode: { type: Number, required: true },
+    initialChartWidth: { type: Number, required: true },
+    focusDateIdx: { type: Number, required: true },
   },
   data() {
     return {
@@ -154,7 +180,6 @@ export default {
       tipTimeout: null,
     };
   },
-  mounted() {},
   computed: {
     ...mapGetters([
       'dates',
@@ -164,6 +189,37 @@ export default {
       'currentDateIdx',
       'currentCountries',
     ]),
+  },
+  watch: {
+    focusDateIdx(newDateIdx, oldDateIdx) {
+      // hover
+      let bar;
+      if (oldDateIdx > 0) {
+        bar = this.bars[oldDateIdx];
+        if (bar.highlight !== 2) {
+          this.$set(bar, 'highlight', 0);
+        }
+      }
+      if (newDateIdx > 0) {
+        bar = this.bars[newDateIdx];
+        if (bar.highlight !== 2) {
+          this.$set(bar, 'highlight', 1);
+        }
+      }
+    },
+    currentDate() {
+      this.updateForCurrentDate();
+    },
+    seriesStats() {
+      this.refresh();
+    },
+    mode() {
+      this.updateMode();
+      this.refresh();
+    },
+    currentCountries() {
+      this.updateMode();
+    },
   },
   methods: {
     selectBar(index) {
@@ -178,13 +234,9 @@ export default {
       this.$emit('selectDate', date, state);
     },
     tipOn(index, event) {
-      const {
-        barWidth, bars, selectedMeasures, oy, ox,
-      } = this;
+      const { barWidth, bars, selectedMeasures, oy, ox } = this;
       const bar = bars[index];
-      const {
-        stacks, dateTip, date, dateIndex,
-      } = bar;
+      const { stacks, dateTip, date, dateIndex } = bar;
       const rect = event.target;
       // const svg = rect.parentElement.parentElement;
       const tipCache = this.tipCache[index];
@@ -247,9 +299,7 @@ export default {
       let singleMinV = 0;
       let singleMaxV = 0;
       each(selectedMeasures, (measure) => {
-        const {
-          maxSum, minSum, max: sMax, min: sMin,
-        } = seriesStats[measure];
+        const { maxSum, minSum, max: sMax, min: sMin } = seriesStats[measure];
         maxV += maxSum;
         minV += minSum;
         singleMaxV += sMax;
@@ -298,9 +348,7 @@ export default {
       this.effectiveHeight = this.dateY + this.dateLabelHeight;
     },
     calcGrid() {
-      const {
-        ox, widthX, selectedMeasures, maxV, minV,
-      } = this;
+      const { ox, widthX, selectedMeasures, maxV, minV } = this;
       let measure = 'confirmed';
       if (selectedMeasures.length === 1) {
         [measure] = selectedMeasures; // get first element
@@ -327,16 +375,14 @@ export default {
       if (useSemiLog && measure) {
         const { maxSum } = this.seriesStats[measure];
         h = Math.ceil(
-          (Math.log10(v + 1) * height * maxSum)
-            / (rangeV * Math.log10(maxSum + 1)),
+          (Math.log10(v + 1) * height * maxSum) /
+            (rangeV * Math.log10(maxSum + 1))
         );
       }
       return h;
     },
     calcBars() {
-      const {
-        barWidth, ox, selectedMeasures, dates, currentCountries,
-      } = this;
+      const { barWidth, ox, selectedMeasures, dates, currentCountries } = this;
       let x = ox;
       const bars = [];
       let path = '';
@@ -461,37 +507,6 @@ export default {
       });
     },
   },
-  watch: {
-    focusDateIdx(newDateIdx, oldDateIdx) {
-      // hover
-      let bar;
-      if (oldDateIdx > 0) {
-        bar = this.bars[oldDateIdx];
-        if (bar.highlight !== 2) {
-          this.$set(bar, 'highlight', 0);
-        }
-      }
-      if (newDateIdx > 0) {
-        bar = this.bars[newDateIdx];
-        if (bar.highlight !== 2) {
-          this.$set(bar, 'highlight', 1);
-        }
-      }
-    },
-    currentDate() {
-      this.updateForCurrentDate();
-    },
-    seriesStats() {
-      this.refresh();
-    },
-    mode() {
-      this.updateMode();
-      this.refresh();
-    },
-    currentCountries() {
-      this.updateMode();
-    },
-  },
 };
 </script>
 
@@ -499,103 +514,103 @@ export default {
 @import '../assets/styles/vars'
 
 .tip
-  position: absolute
-  left: 0
-  top: 0
-  font-size: 10px
-  padding: 3px
-  background-color: rgba(255, 255, 255, 0.8)
+  position absolute
+  left 0
+  top 0
+  font-size 10px
+  padding 3px
+  background-color rgba(255, 255, 255, 0.8)
 
 .vertical
-  display: inline-block
-  transform: rotate(-90deg) translate(-100%, 10px)
-  transform-origin: top left
+  display inline-block
+  transform rotate(-90deg) translate(-100%, 10px)
+  transform-origin top left
 
 .chart
-  margin-top: 10px
-  position: relative
+  margin-top 10px
+  position relative
 
   .mode-select
-    position: absolute
-    top: 0
-    left: 30px
+    position absolute
+    top 0
+    left 30px
 
   .header
-    width: 20px
-    position: absolute
+    width 20px
+    position absolute
 
     span
-      display: inline-block
-      text-align: center
-      font-size: 10px
+      display inline-block
+      text-align center
+      font-size 10px
 
 .chart-svg
-  margin: 0 10px 0 27px
+  margin 0 10px 0 27px
 
 .chart text
-  font-size: 8px
+  font-size 8px
 
 .chart .tickMonth
-  stroke: #e0e0e0
-  stroke-width: 1
+  stroke #e0e0e0
+  stroke-width 1
 
 .chart .tick
-  stroke: $c-week-start
-  stroke-width: 1
+  stroke $c-week-start
+  stroke-width 1
 
 .grid
-  stroke: #e0e0e0
-  stroke-width: 0.5
-  fill: none
-  stroke-linecap: round
+  stroke #e0e0e0
+  stroke-width 0.5
+  fill none
+  stroke-linecap round
 
 .line
-  stroke-width: 2
-  fill: none
-  stroke-linecap: round
-  stroke-linejoin: round
-  pointer-events: none
+  stroke-width 2
+  fill none
+  stroke-linecap round
+  stroke-linejoin round
+  pointer-events none
 
 rect.base
-  stroke: transparen
-  stroke-width: 1
+  stroke transparen
+  stroke-width 1
 
 rect.base:hover
-  fill: $c-hover
+  fill $c-hover
 
 rect.base.hi-1
-  fill: $c-hover
+  fill $c-hover
 
 rect.base.hi-2
-  fill: $c-selected-light
+  fill $c-selected-light
 
 rect.bar
-  pointer-events: none
+  pointer-events none
 
 rect.bar[data-negative='true']
-  fill: $c-negative
+  fill $c-negative
 
 rect.confirmed
-  fill: $c-confirmed
+  fill $c-confirmed
 
 rect.dConfirmed
-  fill: darken($c-confirmed, 30%)
+  fill darken($c-confirmed, 30%)
 
 rect.deceased
-  fill: $c-deceased
+  fill $c-deceased
 
 rect.dDeceased
-  fill: darken($c-deceased, 30%)
+  fill darken($c-deceased, 30%)
 
 rect.recovered
-  fill: $c-recovered
+  fill $c-recovered
 
 rect.dRecovered
-  fill: darken($c-recovered, 30%)
+  fill darken($c-recovered, 30%)
 
 rect.active
-  fill: $c-active
+  fill $c-active
 
 rect.dActive
-  fill: darken($c-active, 20%)
+  fill darken($c-active, 20%)
 </style>

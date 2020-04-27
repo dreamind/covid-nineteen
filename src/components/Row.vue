@@ -1,7 +1,12 @@
 <template>
   <div class="row" :class="selectedCls" @click="toggleCountry">
     <label class="tickbox">
-      <input type="checkbox" value="row.country" v-model="row.selected" @click="toggleCountry" />
+      <input
+        v-model="row.selected"
+        type="checkbox"
+        value="row.country"
+        @click="toggleCountry"
+      />
       <span></span>
     </label>
     <div class="country" :style="columnWidthStyle(0)" :title="row.country">
@@ -12,14 +17,14 @@
       :log="false"
       :row="row"
       :value="row.confirmed"
-      :dValue="row.dConfirmed"
-      :d2Value="row.means.d2Confirmed"
-      :maxValue="rowStats['confirmed'].max"
-      :maxDValue="rowStats['dConfirmed'].max"
-      :minValue="rowStats['confirmed'].min"
-      :minDValue="rowStats['dConfirmed'].min"
-      :barWidth="barWidths[1]"
-      :labelWidth="labelWidth"
+      :d-value="row.dConfirmed"
+      :d2value="row.means.d2Confirmed"
+      :max-value="rowStats['confirmed'].max"
+      :max-d-value="rowStats['dConfirmed'].max"
+      :min-value="rowStats['confirmed'].min"
+      :min-d-value="rowStats['dConfirmed'].min"
+      :bar-width="barWidths[1]"
+      :label-width="labelWidth"
       :mode="mode"
     />
     <cell
@@ -27,14 +32,14 @@
       :log="false"
       :row="row"
       :value="row.deceased"
-      :dValue="row.dDeceased"
-      :d2Value="row.means.d2Deceased"
-      :maxValue="rowStats['deceased'].max"
-      :maxDValue="rowStats['dDeceased'].max"
-      :minValue="rowStats['deceased'].min"
-      :minDValue="rowStats['dDeceased'].min"
-      :barWidth="barWidths[2]"
-      :labelWidth="labelWidth"
+      :d-value="row.dDeceased"
+      :d2value="row.means.d2Deceased"
+      :max-value="rowStats['deceased'].max"
+      :max-d-value="rowStats['dDeceased'].max"
+      :min-value="rowStats['deceased'].min"
+      :min-d-value="rowStats['dDeceased'].min"
+      :bar-width="barWidths[2]"
+      :label-width="labelWidth"
       :mode="mode"
     />
     <cell
@@ -42,14 +47,14 @@
       :log="false"
       :row="row"
       :value="row.recovered"
-      :dValue="row.dRecovered"
-      :d2Value="row.means.d2Recovered"
-      :maxValue="rowStats['recovered'].max"
-      :maxDValue="rowStats['dRecovered'].max"
-      :minValue="rowStats['recovered'].min"
-      :minDValue="rowStats['dRecovered'].min"
-      :barWidth="barWidths[3]"
-      :labelWidth="labelWidth"
+      :d-value="row.dRecovered"
+      :d2value="row.means.d2Recovered"
+      :max-value="rowStats['recovered'].max"
+      :max-d-value="rowStats['dRecovered'].max"
+      :min-value="rowStats['recovered'].min"
+      :min-d-value="rowStats['dRecovered'].min"
+      :bar-width="barWidths[3]"
+      :label-width="labelWidth"
       :mode="mode"
     />
     <cell
@@ -57,14 +62,14 @@
       :log="false"
       :row="row"
       :value="row.active"
-      :dValue="row.dActive"
-      :d2Value="row.means.d2Active"
-      :maxValue="rowStats['active'].max"
-      :maxDValue="rowStats['dActive'].max"
-      :minValue="rowStats['active'].min"
-      :minDValue="rowStats['dActive'].min"
-      :barWidth="barWidths[4]"
-      :labelWidth="labelWidth"
+      :d-value="row.dActive"
+      :d2value="row.means.d2Active"
+      :max-value="rowStats['active'].max"
+      :max-d-value="rowStats['dActive'].max"
+      :min-value="rowStats['active'].min"
+      :min-d-value="rowStats['dActive'].min"
+      :bar-width="barWidths[4]"
+      :label-width="labelWidth"
       :mode="mode"
     />
   </div>
@@ -78,16 +83,22 @@ import { mixin as columnMixin } from '../mixins/columns';
 
 export default {
   name: 'Row',
+  components: {
+    Cell,
+  },
+  mixins: [columnMixin],
   props: {
     selected: Boolean,
     log: Boolean,
-    row: Object,
-    mean: Object,
-    mode: Number,
+    row: { type: Object, required: true },
+    mode: { type: Number, required: true },
   },
-  mixins: [columnMixin],
-  components: {
-    Cell,
+  data() {
+    return {
+      barWidth: 80,
+      dWidth: 40,
+      checked: false,
+    };
   },
   computed: {
     selectedCls() {
@@ -98,19 +109,11 @@ export default {
     },
     ...mapGetters(['rowStats']),
   },
-  data() {
-    return {
-      barWidth: 80,
-      dWidth: 40,
-      checked: false,
-    };
-  },
   watch: {
     checked() {
       this.$emit('select', this.row.country, this.checked);
     },
   },
-  mounted() {},
   methods: {
     toggleCountry() {
       this.$emit('toggleCountry', this.row.country);

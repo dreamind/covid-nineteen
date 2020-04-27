@@ -1,18 +1,26 @@
 <template>
   <div class="cell" :style="{ width: `${allWidth}px` }">
-    <div v-if="showValue" class="value-label" :style="{ width: `${labelWidth}px` }">
+    <div
+      v-if="showValue"
+      class="value-label"
+      :style="{ width: `${labelWidth}px` }"
+    >
       {{ nFormat(value) }}
     </div>
     <span v-if="false">↗↘→</span>
     <div class="bars">
-      <div class="value bar" v-if="showValue" :style="{ width: valueWidthPx }" />
       <div
+        v-if="showValue"
+        class="value bar"
+        :style="{ width: valueWidthPx }"
+      />
+      <div
+        v-if="showDValue"
         class="d-value bar"
         :class="dValueBarCls"
-        v-if="showDValue"
         :style="{ width: dValueWidthPx }"
       />
-      <div class="d-value-label" v-if="showDValue">
+      <div v-if="showDValue" class="d-value-label">
         {{ dFormat(dValue) }}
         <span class="symbol">
           <span v-if="d2Value < 0">↓</span>
@@ -26,28 +34,24 @@
 
 <script>
 import { max } from 'lodash';
-import {
-  nFormat,
-  dFormat,
-} from '../libs/common';
+import { nFormat, dFormat } from '../libs/common';
 
 export default {
   name: 'Cell',
   props: {
     log: Boolean,
-    row: Object,
-    value: Number,
-    dValue: Number,
-    d2Value: Number,
-    minValue: Number,
-    maxValue: Number,
-    minDValue: Number,
-    maxDValue: Number,
-    barWidth: Number,
-    labelWidth: Number,
-    mode: Number, // 0 = both, 1 = value only, 2 = dValue only
+    row: { type: Object, required: true },
+    value: { type: Number, required: true },
+    dValue: { type: Number, required: true },
+    d2Value: { type: Number, required: true },
+    minValue: { type: Number, required: true },
+    maxValue: { type: Number, required: true },
+    minDValue: { type: Number, required: true },
+    maxDValue: { type: Number, required: true },
+    barWidth: { type: Number, required: true },
+    labelWidth: { type: Number, required: true },
+    mode: { type: Number, required: true }, // 0 = both, 1 = value only, 2 = dValue only
   },
-  created() {},
   computed: {
     dValueBarCls() {
       if (this.dValue < 0) {
@@ -96,6 +100,7 @@ export default {
       return `${this.dValueWidth}px`;
     },
   },
+  created() {},
   mounted() {},
   methods: {
     nFormat,

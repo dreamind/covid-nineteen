@@ -1,8 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import {
-  keyBy, each, union, without,
-} from 'lodash';
+import { keyBy, each, union, without } from 'lodash';
 import * as api from '../libs/data';
 import { countries, dates, dateMap } from '../libs/common';
 
@@ -44,9 +42,7 @@ export default new Vuex.Store({
     setTable(state, table) {
       state.table = table;
     },
-    setSnapshot(state, {
-      currentDate, currentDateIdx, rows, rowStats,
-    }) {
+    setSnapshot(state, { currentDate, currentDateIdx, rows, rowStats }) {
       state.currentDate = currentDate;
       state.currentDateIdx = currentDateIdx;
       state.rows = rows;
@@ -95,9 +91,15 @@ export default new Vuex.Store({
       if (!currentDateIdx) {
         currentDateIdx = dateMap[currentDate];
       }
-      const { rows, stats: rowStats } = api.extSnapshotAt(currentDate, state.movingDays);
+      const { rows, stats: rowStats } = api.extSnapshotAt(
+        currentDate,
+        state.movingDays
+      );
       context.commit('setSnapshot', {
-        currentDate, currentDateIdx, rows, rowStats,
+        currentDate,
+        currentDateIdx,
+        rows,
+        rowStats,
       });
     },
     updateCountries(context, country) {
@@ -120,8 +122,14 @@ export default new Vuex.Store({
       context.dispatch('getTimeseries', newCountries);
     },
     getTimeseries(context, currentCountries = []) {
-      const { series, stats: seriesStats } = api.extTimeSeriesOf(currentCountries);
-      context.commit('setTimeseries', { currentCountries, series, seriesStats });
+      const { series, stats: seriesStats } = api.extTimeSeriesOf(
+        currentCountries
+      );
+      context.commit('setTimeseries', {
+        currentCountries,
+        series,
+        seriesStats,
+      });
     },
   },
 });

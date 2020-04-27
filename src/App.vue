@@ -3,9 +3,9 @@
     <div id="logo"></div>
     <div class="app-header">
       <div
-        :style="columnWidthStyle(index)"
-        :key="'col-' + index"
         v-for="(column, index) in columns"
+        :key="'col-' + index"
+        :style="columnWidthStyle(index)"
       >
         <div v-if="index === 0" class="mode-select">
           <span
@@ -14,7 +14,8 @@
             title="Total &amp; New Cases"
             @click="setSnapshotMode(SNAPSHOT_BOTH)"
           >
-            ∑<span class="ampersand">&</span>Δ<!-- this must be in the same line -->
+            ∑<span class="ampersand">&</span
+            >Δ<!-- this must be in the same line -->
           </span>
           <span
             class="symbol"
@@ -35,9 +36,13 @@
         </div>
         <div v-else class="indicator">
           <div class="numbers">
-            <span :class="column.field">{{ nFormat(currents[column.field]) }}</span>
+            <span :class="column.field">{{
+              nFormat(currents[column.field])
+            }}</span>
             <span class="divider"></span>
-            <span :class="column.dField">{{ dFormat(currents[column.dField]) }}</span>
+            <span :class="column.dField">{{
+              dFormat(currents[column.dField])
+            }}</span>
           </div>
           <div class="heading">{{ column.title }} Cases</div>
         </div>
@@ -69,15 +74,16 @@
           title="Both"
           @click="setTimeseriesMode(TIMESERIES_BOTH)"
         >
-          +<span class="ampersand">&</span>÷<!-- this must be in the same line -->
+          +<span class="ampersand">&</span
+          >÷<!-- this must be in the same line -->
         </span>
       </div>
       <div class="countries">
         <span
-          class="country"
-          :key="country"
-          :style="{ 'background-color': palette[index % palette.length] }"
           v-for="(country, index) in currentCountries"
+          :key="country"
+          class="country"
+          :style="{ 'background-color': palette[index % palette.length] }"
         >
           {{ country }}
         </span>
@@ -94,52 +100,52 @@
         <div id="charts">
           <Chart
             title="Total Confirmed"
-            :selectedMeasures="['deceased', 'recovered', 'active']"
+            :selected-measures="['deceased', 'recovered', 'active']"
             :height="130"
             :width="chartWidth"
             :mode="timeseriesMode"
-            :focusDateIdx="focusDateIdx"
-            :initialChartWidth="initialChartWidth"
+            :focus-date-idx="focusDateIdx"
+            :initial-chart-width="initialChartWidth"
             @selectDate="selectDate"
           />
           <Chart
             title="Daily Confirmed"
-            :selectedMeasures="['dConfirmed']"
+            :selected-measures="['dConfirmed']"
             :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
-            :focusDateIdx="focusDateIdx"
-            :initialChartWidth="initialChartWidth"
+            :focus-date-idx="focusDateIdx"
+            :initial-chart-width="initialChartWidth"
             @selectDate="selectDate"
           />
           <Chart
             title="Daily Deceased"
-            :selectedMeasures="['dDeceased']"
+            :selected-measures="['dDeceased']"
             :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
-            :focusDateIdx="focusDateIdx"
-            :initialChartWidth="initialChartWidth"
+            :focus-date-idx="focusDateIdx"
+            :initial-chart-width="initialChartWidth"
             @selectDate="selectDate"
           />
           <Chart
             title="Daily Recovered"
-            :selectedMeasures="['dRecovered']"
+            :selected-measures="['dRecovered']"
             :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
-            :focusDateIdx="focusDateIdx"
-            :initialChartWidth="initialChartWidth"
+            :focus-date-idx="focusDateIdx"
+            :initial-chart-width="initialChartWidth"
             @selectDate="selectDate"
           />
           <Chart
             title="Daily Active"
-            :selectedMeasures="['dActive']"
+            :selected-measures="['dActive']"
             :height="70"
             :width="chartWidth"
             :mode="timeseriesMode"
-            :focusDateIdx="focusDateIdx"
-            :initialChartWidth="initialChartWidth"
+            :focus-date-idx="focusDateIdx"
+            :initial-chart-width="initialChartWidth"
             @selectDate="selectDate"
           />
         </div>
@@ -171,11 +177,11 @@ import {
 
 export default {
   name: 'App',
-  mixins: [columnMixin],
   components: {
     Grid,
     Chart,
   },
+  mixins: [columnMixin],
   data() {
     return {
       palette,
@@ -209,7 +215,20 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['rows', 'rowStats', 'series', 'totalStats', 'currentDate', 'currentCountries']),
+    ...mapGetters([
+      'rows',
+      'rowStats',
+      'series',
+      'totalStats',
+      'currentDate',
+      'currentCountries',
+    ]),
+  },
+  watch: {
+    currentDate() {
+      this.updateCurrentDate();
+      this.updateMainStats();
+    },
   },
   async created() {
     this.initialChartWidth = screen.width - 20 - 700;
@@ -217,12 +236,6 @@ export default {
     await this.$store.dispatch('pull');
     this.$store.dispatch('getSnapshot');
     this.$store.dispatch('getTimeseries');
-  },
-  watch: {
-    currentDate() {
-      this.updateCurrentDate();
-      this.updateMainStats();
-    },
   },
   mounted() {},
   methods: {
@@ -248,7 +261,9 @@ export default {
     updateCurrentDate() {
       const m = moment(this.currentDate);
       this.humanDate = m.format('ddd, D MMM YY');
-      let distDate = moment.duration(m.diff(moment().format('YYYY-MM-DD'))).asDays();
+      let distDate = moment
+        .duration(m.diff(moment().format('YYYY-MM-DD')))
+        .asDays();
       if (distDate === 0) {
         distDate = 'today';
       } else {

@@ -3,15 +3,20 @@
     <div class="grid-header">
       <label class="tickbox">
         <input
+          v-model="countryReset"
           title="Clear country selection"
           type="checkbox"
           value="false"
           @click.prevent="resetCountries"
-          v-model="countryReset"
         />
         <span></span>
       </label>
-      <div class="heading" :key="c" :style="columnWidthStyle(c)" v-for="c in [0, 1, 2, 3, 4]">
+      <div
+        v-for="c in [0, 1, 2, 3, 4]"
+        :key="c"
+        class="heading"
+        :style="columnWidthStyle(c)"
+      >
         <span>{{ modeHeading(c) }}</span>
         <div class="sorter" :class="sorterCls(c)">
           <span @click="setSorter(c, 1)">▼</span>
@@ -21,8 +26,8 @@
     </div>
     <div class="rows-wrapper scrolled">
       <row
-        v-bind:key="row.country"
         v-for="row in sortedRows"
+        :key="row.country"
         :row="row"
         :mode="mode"
         @toggleCountry="toggleCountry"
@@ -36,19 +41,16 @@ import { mapGetters } from 'vuex';
 import { orderBy, each } from 'lodash';
 import Row from './Row.vue';
 import { mixin as columnMixin } from '../mixins/columns';
-import {
-  modeHeadingMap, sorterMap, columns,
-} from '../libs/common';
+import { modeHeadingMap, sorterMap, columns } from '../libs/common';
 
 export default {
   name: 'Grid',
-  mixins: [columnMixin],
   components: {
     Row,
   },
+  mixins: [columnMixin],
   props: {
-    mode: Number,
-    msg: String,
+    mode: { type: Number, required: true },
   },
   data() {
     return {

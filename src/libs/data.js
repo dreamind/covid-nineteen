@@ -2,13 +2,9 @@
 import axios from 'axios';
 import { Table, predicate } from 'apache-arrow';
 import moment from 'moment';
-import {
-  reduce, each, clone, meanBy,
-} from 'lodash';
+import { reduce, each, clone, meanBy } from 'lodash';
 import { dates } from '../../public/data/summary.json';
-import {
-  dateMap, fields, measures, categories,
-} from './common';
+import { dateMap, fields, measures, categories } from './common';
 
 let table = null;
 
@@ -64,7 +60,7 @@ function scan(predicates) {
       each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    },
+    }
   );
   return { rows, stats };
 }
@@ -77,7 +73,7 @@ function timeseriesOf([country, ...countries]) {
   const predicates = reduce(
     countries,
     (preds, countri) => preds.or(predicate.col('country').eq(countri)),
-    predicate.col('country').eq(country),
+    predicate.col('country').eq(country)
   );
   return scan(predicates);
 }
@@ -162,7 +158,7 @@ function extSnapshotAt(dateIndex, days) {
       each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    },
+    }
   );
 
   each(ext, ({ history, row }, country) => {
@@ -214,7 +210,7 @@ function extTimeSeriesOf([country, ...countries] = []) {
     predicates = reduce(
       countries,
       (preds, countri) => preds.or(predicate.col('country').eq(countri)),
-      predicate.col('country').eq(country),
+      predicate.col('country').eq(country)
     );
     filter = table.filter(predicates);
   } else {
@@ -255,13 +251,11 @@ function extTimeSeriesOf([country, ...countries] = []) {
       each(fields, (field) => {
         binder[field] = predicate.col(field).bind(batch);
       });
-    },
+    }
   );
 
   // TO DO: running average
   return { stats, series };
 }
 
-export {
-  pull, snapshotAt, timeseriesOf, extSnapshotAt, extTimeSeriesOf,
-};
+export { pull, snapshotAt, timeseriesOf, extSnapshotAt, extTimeSeriesOf };

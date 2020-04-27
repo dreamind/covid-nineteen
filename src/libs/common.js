@@ -9,7 +9,7 @@ const dateMap = reduce(
     o[e] = i;
     return o;
   },
-  {},
+  {}
 );
 
 const categories = ['country', 'date', 'dateIndex'];
@@ -77,9 +77,7 @@ const columns = [
 
 const columnMap = {};
 
-each(columns, ({
-  field, title, dField, symbol,
-}) => {
+each(columns, ({ field, title, dField, symbol }) => {
   columnMap[field] = {
     field,
     title: `Total ${title}`,

@@ -13,7 +13,9 @@ const dateNum = dates.length;
 describe('Reading imported data', () => {
   it('passes basic validation', () => {
     expect(table.count()).toEqual(countryNum * dateNum);
-    expect(table.filter(arrow.predicate.col('country').eq('Australia')).count()).toEqual(dateNum);
+    expect(
+      table.filter(arrow.predicate.col('country').eq('Australia')).count()
+    ).toEqual(dateNum);
 
     let result = [];
     let date;
@@ -25,14 +27,18 @@ describe('Reading imported data', () => {
       (batch) => {
         date = arrow.predicate.col('date').bind(batch);
         confirmed = arrow.predicate.col('confirmed').bind(batch);
-      },
+      }
     );
 
     expect(result.length).toEqual(dateNum);
     const lastDate = result[result.length - 1].date;
 
-    expect(moment(lastDate).valueOf()).toEqual(moment(dates[dateNum - 1]).valueOf() / 1000);
-    expect(table.filter(arrow.predicate.col('date').eq(lastDate)).count()).toEqual(countryNum);
+    expect(moment(lastDate).valueOf()).toEqual(
+      moment(dates[dateNum - 1]).valueOf() / 1000
+    );
+    expect(
+      table.filter(arrow.predicate.col('date').eq(lastDate)).count()
+    ).toEqual(countryNum);
 
     expect(
       table
@@ -40,9 +46,9 @@ describe('Reading imported data', () => {
           arrow.predicate
             .col('country')
             .eq('Australia')
-            .and(arrow.predicate.col('date').eq(lastDate)),
+            .and(arrow.predicate.col('date').eq(lastDate))
         )
-        .count(),
+        .count()
     ).toEqual(1);
 
     result = [];
@@ -53,10 +59,12 @@ describe('Reading imported data', () => {
       (batch) => {
         date = arrow.predicate.col('date').bind(batch);
         confirmed = arrow.predicate.col('confirmed').bind(batch);
-      },
+      }
     );
     const sorted = sortBy(result, (x) => -x.confirmed);
-    expect(sorted[0].confirmed).toBeGreaterThanOrEqual(sorted[sorted.length - 1].confirmed);
+    expect(sorted[0].confirmed).toBeGreaterThanOrEqual(
+      sorted[sorted.length - 1].confirmed
+    );
 
     function columnStats(columnName) {
       const column = table.getColumn(columnName);
